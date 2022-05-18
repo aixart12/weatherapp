@@ -1,62 +1,37 @@
 import { HttpService } from '@nestjs/axios';
-import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { catchError, map } from 'rxjs/operators';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import axios from 'axios';
 import { WeatherScheme } from 'src/models/weather.model';
 
 @Injectable()
 export class WeatherService {
-  constructor(private readonly httpService: HttpService) { }
+  constructor(private readonly httpService: HttpService, @Inject('WEATHER_REPOSITRY') private readonly weatherRepositry: typeof WeatherScheme) { }
 
   async getWeather(cityName: string): Promise<any> {
-    const response: any = this.httpService.get(`https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=90554fadf5070ccde1f257df60d19a64`).pipe(
-      map((response) => { return response.data }),
-      catchError((e) => {
-        throw new HttpException(e.response.data, e.response.status);
-      }),
-    );
+    
+    const response: any = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=90554fadf5070ccde1f257df60d19a64`)
 
-    const weatherdata = await WeatherScheme.findOne({ where: { name: cityName } })
-    if (weatherdata) {
-      WeatherScheme.update({
-        name: response?.name,
-        maxtemp: response?.main?.temp_max,
-        mintemp: response?.main?.temp_min,
-        visibility: response?.visibility
-
+    const weatherdata: any = await this.weatherRepositry.findAll({ where: { name: response.data.name } })
+    console.log("-------DATA_-------",weatherdata)
+    if (weatherdata.length > 0 ) {
+      await this.weatherRepositry.update({
+        name: response.data?.name,
+        maxtemp: +(response.data?.main?.temp_max),
+        mintemp: +(response.data?.main?.temp_min),
+        visibility: +(response.data?.visibility)
 
       }, { where: { name: cityName } })
     } else {
-      WeatherScheme.create({
-        name: response?.name,
-        maxtemp: response?.main?.temp_max,
-        mintemp: response?.main?.temp_min,
-        visibility: response?.visibility
+      await this.weatherRepositry.create({
+        name: response.data?.name,
+        maxtemp: +(response?.data.main?.temp_max),
+        mintemp: +(response.data?.main?.temp_min),
+        visibility: +(response.data?.visibility)
       })
     }
 
-
-    Logger.log("RESPONSE SENT")
-    console.log("RESPONSE:", response);
-    return response;
-
-
-
+      return response.data;
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 }

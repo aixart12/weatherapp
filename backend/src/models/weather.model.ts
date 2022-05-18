@@ -1,14 +1,20 @@
-import { Column, Model, Table } from "sequelize-typescript";
+import { Column, DataType, Model, Table } from "sequelize-typescript";
 
 @Table
 export class WeatherScheme  extends Model {
     @Column
     name: string;
-    @Column
+    @Column({
+        type: DataType.STRING
+    })
     maxtemp : number;
-    @Column
+    @Column({
+        type: DataType.FLOAT
+    })
     mintemp: number;
-    @Column
+    @Column({
+        type: DataType.FLOAT
+    })
     visibility:number;
 
 }
