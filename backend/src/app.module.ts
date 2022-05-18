@@ -15,7 +15,8 @@ import { WeatherModule } from './modules/weather/weather.module';
     password:'postgres',
     database:'weather',
     autoLoadModels: true,
-    synchronize: true
+    synchronize: true,
+    // sync: {force :true}
   }),
     WeatherModule],
   controllers: [AppController],
